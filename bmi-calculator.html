@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BMI Calculator</title>
+    <style>
+        :root {
+            --bg-primary: #fafafa;
+            --bg-secondary: #ffffff;
+            --bg-tertiary: #f5f5f5;
+            --text-primary: #171717;
+            --text-secondary: #525252;
+            --text-tertiary: #737373;
+            --border: #e5e5e5;
+            --accent: #171717;
+            --success: #16a34a;
+            --warning: #ca8a04;
+            --danger: #dc2626;
+            --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+        }
+
+        [data-theme="dark"] {
+            --bg-primary: #0a0a0a;
+            --bg-secondary: #171717;
+            --bg-tertiary: #262626;
+            --text-primary: #fafafa;
+            --text-secondary: #a3a3a3;
+            --text-tertiary: #737373;
+            --border: #404040;
+            --accent: #fafafa;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            transition: background 0.3s, color 0.3s;
+        }
+
+        header {
+            padding: 24px 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .logo {
+            font-size: 18px;
+            font-weight: 600;
+            letter-spacing: -0.5px;
+        }
+
+        .theme-toggle {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            color: var(--text-secondary);
+            transition: all 0.2s;
+        }
+
+        .theme-toggle:hover {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+        }
+
+        main {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 48px 24px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 480px;
+        }
+
+        h1 {
+            font-size: 32px;
+            font-weight: 600;
+            letter-spacing: -0.5px;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 16px;
+            margin-bottom: 32px;
+        }
+
+        .card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 32px;
+            box-shadow: var(--shadow);
+        }
+
+        .unit-toggle {
+            display: flex;
+            gap: 0;
+            margin-bottom: 24px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .unit-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .unit-btn.active {
+            background: var(--text-primary);
+            color: var(--bg-secondary);
+        }
+
+        .unit-btn:not(.active):hover {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        input[type="number"] {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-size: 16px;
+            font-family: inherit;
+            transition: all 0.2s;
+            -moz-appearance: textfield;
+        }
+
+        input[type="number"]::-webkit-outer-spin-button,
+        input[type="number"]::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        input[type="number"]:focus {
+            outline: none;
+            border-color: var(--text-primary);
+            background: var(--bg-secondary);
+        }
+
+        .unit-label {
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-tertiary);
+            font-size: 14px;
+            pointer-events: none;
+        }
+
+        .result-section {
+            margin-top: 32px;
+            padding-top: 32px;
+            border-top: 1px solid var(--border);
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all 0.3s;
+        }
+
+        .result-section.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .bmi-value {
+            font-size: 64px;
+            font-weight: 700;
+            letter-spacing: -2px;
+            line-height: 1;
+            margin-bottom: 8px;
+        }
+
+        .bmi-category {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+
+        .bmi-description {
+            color: var(--text-secondary);
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .gauge {
+            width: 100%;
+            height: 8px;
+            background: var(--bg-tertiary);
+            border-radius: 4px;
+            margin: 24px 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .gauge-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.5s ease, background 0.3s;
+            width: 0%;
+        }
+
+        .gauge-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: var(--text-tertiary);
+            margin-top: 8px;
+        }
+
+        .underweight {
+            color: var(--warning);
+        }
+
+        .normal {
+            color: var(--success);
+        }
+
+        .overweight {
+            color: var(--warning);
+        }
+
+        .obese {
+            color: var(--danger);
+        }
+
+        footer {
+            padding: 24px;
+            text-align: center;
+            color: var(--text-tertiary);
+            font-size: 12px;
+            border-top: 1px solid var(--border);
+        }
+
+        @media (max-width: 480px) {
+            header {
+                padding: 16px 20px;
+            }
+
+            .card {
+                padding: 24px;
+            }
+
+            h1 {
+                font-size: 28px;
+            }
+
+            .bmi-value {
+                font-size: 48px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <div class="logo">BMI Pro</div>
+        <button class="theme-toggle" onclick="toggleTheme()">
+            <span id="themeText">Dark</span>
+        </button>
+    </header>
+
+    <main>
+        <div class="container">
+            <h1>Body Mass Index</h1>
+            <p class="subtitle">Calculate your BMI and understand your health metrics</p>
+
+            <div class="card">
+                <div class="unit-toggle">
+                    <button class="unit-btn active" onclick="setUnit('metric')" id="metricBtn">Metric</button>
+                    <button class="unit-btn" onclick="setUnit('imperial')" id="imperialBtn">Imperial</button>
+                </div>
+
+                <div class="input-group">
+                    <label>Height</label>
+                    <div class="input-wrapper">
+                        <input type="number" id="height" placeholder="0" step="0.1" oninput="calculate()">
+                        <span class="unit-label" id="heightUnit">cm</span>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label>Weight</label>
+                    <div class="input-wrapper">
+                        <input type="number" id="weight" placeholder="0" step="0.1" oninput="calculate()">
+                        <span class="unit-label" id="weightUnit">kg</span>
+                    </div>
+                </div>
+
+                <div class="result-section" id="result">
+                    <div class="bmi-value" id="bmiValue">--</div>
+                    <div class="bmi-category" id="bmiCategory">Enter your details</div>
+
+                    <div class="gauge">
+                        <div class="gauge-fill" id="gaugeFill"></div>
+                    </div>
+                    <div class="gauge-labels">
+                        <span>16</span>
+                        <span>18.5</span>
+                        <span>25</span>
+                        <span>30</span>
+                        <span>40</span>
+                    </div>
+
+                    <p class="bmi-description" id="bmiDescription">
+                        BMI is a screening tool, not a diagnostic of body fatness or health.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        Professional health screening tool • Results for reference only
+    </footer>
+
+    <script>
+        let currentUnit = 'metric';
+
+        // Load theme preference
+        window.onload = function () {
+            const savedTheme = localStorage.getItem('bmiTheme');
+            if (savedTheme === 'dark') {
+                document.documentElement.setAttribute('data-theme', 'dark');
+                document.getElementById('themeText').textContent = 'Light';
+            }
+        };
+
+        function toggleTheme() {
+            const html = document.documentElement;
+            const themeText = document.getElementById('themeText');
+
+            if (html.getAttribute('data-theme') === 'dark') {
+                html.removeAttribute('data-theme');
+                localStorage.setItem('bmiTheme', 'light');
+                themeText.textContent = 'Dark';
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                localStorage.setItem('bmiTheme', 'dark');
+                themeText.textContent = 'Light';
+            }
+        }
+
+        function setUnit(unit) {
+            currentUnit = unit;
+
+            // Update buttons
+            document.getElementById('metricBtn').classList.toggle('active', unit === 'metric');
+            document.getElementById('imperialBtn').classList.toggle('active', unit === 'imperial');
+
+            // Update labels
+            document.getElementById('heightUnit').textContent = unit === 'metric' ? 'cm' : 'ft';
+            document.getElementById('weightUnit').textContent = unit === 'metric' ? 'kg' : 'lbs';
+
+            // Clear inputs
+            document.getElementById('height').value = '';
+            document.getElementById('weight').value = '';
+            hideResult();
+        }
+
+        function calculate() {
+            const height = parseFloat(document.getElementById('height').value);
+            const weight = parseFloat(document.getElementById('weight').value);
+
+            if (!height || !weight || height <= 0 || weight <= 0) {
+                hideResult();
+                return;
+            }
+
+            let bmi;
+
+            if (currentUnit === 'metric') {
+                // BMI = kg / m²
+                const heightInMeters = height / 100;
+                bmi = weight / (heightInMeters * heightInMeters);
+            } else {
+                // BMI = 703 * lbs / in²
+                const heightInInches = height * 12;
+                bmi = 703 * weight / (heightInInches * heightInInches);
+            }
+
+            displayResult(bmi);
+        }
+
+        function displayResult(bmi) {
+            const resultSection = document.getElementById('result');
+            const bmiValue = document.getElementById('bmiValue');
+            const bmiCategory = document.getElementById('bmiCategory');
+            const bmiDescription = document.getElementById('bmiDescription');
+            const gaugeFill = document.getElementById('gaugeFill');
+
+            resultSection.classList.add('visible');
+            bmiValue.textContent = bmi.toFixed(1);
+
+            let category, description, colorClass, gaugeWidth, gaugeColor;
+
+            if (bmi < 18.5) {
+                category = 'Underweight';
+                description = 'You may need to gain some weight. Consult with a healthcare provider.';
+                colorClass = 'underweight';
+                gaugeWidth = ((bmi - 16) / (18.5 - 16)) * 25;
+                gaugeColor = 'var(--warning)';
+            } else if (bmi < 25) {
+                category = 'Normal weight';
+                description = 'You have a healthy body weight. Maintain with balanced diet and exercise.';
+                colorClass = 'normal';
+                gaugeWidth = 25 + ((bmi - 18.5) / (25 - 18.5)) * 25;
+                gaugeColor = 'var(--success)';
+            } else if (bmi < 30) {
+                category = 'Overweight';
+                description = 'You may need to lose some weight for optimal health. Consider lifestyle changes.';
+                colorClass = 'overweight';
+                gaugeWidth = 50 + ((bmi - 25) / (30 - 25)) * 25;
+                gaugeColor = 'var(--warning)';
+            } else {
+                category = 'Obese';
+                description = 'Your health may be at risk. Please consult a healthcare provider for guidance.';
+                colorClass = 'obese';
+                gaugeWidth = 75 + Math.min(((bmi - 30) / (40 - 30)) * 25, 25);
+                gaugeColor = 'var(--danger)';
+            }
+
+            // Clamp gauge width
+            gaugeWidth = Math.max(0, Math.min(100, gaugeWidth));
+
+            bmiCategory.textContent = category;
+            bmiCategory.className = 'bmi-category ' + colorClass;
+            bmiDescription.textContent = description;
+
+            gaugeFill.style.width = gaugeWidth + '%';
+            gaugeFill.style.background = gaugeColor;
+        }
+
+        function hideResult() {
+            document.getElementById('result').classList.remove('visible');
+        }
+    </script>
+</body>
+
+</html>
